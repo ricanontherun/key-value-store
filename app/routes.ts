@@ -1,13 +1,13 @@
 import {default as express, Request, Response, Router} from 'express';
 
 import {
+    StoreOpts,
     MemoryStore
-} from './stores';
-
+} from './store';
 import Item from './item'
 
 // TODO: Is there anyway to type hint an interface?
-const store = new MemoryStore;
+const store = new MemoryStore(new StoreOpts);
 const DEFAULT_STORE_TTL: number = 60; // seconds.
 
 const router = Router();
@@ -19,11 +19,11 @@ const genericErrorHandler = (res: Response, err: Error) => {
 }
 
 router.get('/', (req: Request, res: Response) => {
-    return res.status(200).send('listen buddy');
+    return res.status(200).send('ok');
 });
 
 router.post('/entries', (req: Request, res: Response) => {
-    return store.Add(req.body.key, req.body.value, DEFAULT_STORE_TTL).then(() => {
+    return store.Set(req.body.key, req.body.value, DEFAULT_STORE_TTL).then(() => {
         res.send('ok');
     }).catch(genericErrorHandler.bind(null, res));
 });

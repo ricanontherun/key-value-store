@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "./node_modules/mocha/bin/mocha -r ts-node/register test/**/*.ts",
     "tsc": "tsc",
     "start": "node ./build/server.js",
     "start-dev": "npm run tsc && npm run start",
@@ -19,7 +19,18 @@
     "body-parser": "^1.18.3",
     "express": "^4.16.3",
     "moment": "^2.22.2",
-    "ts-node": "^7.0.1",
-    "typescript": "^3.1.1"
+    "object-sizeof": "^1.2.0",
+    "ts-node": "^7.0.1"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.1.6",
+    "@types/mocha": "^5.2.5",
+    "chai": "^4.2.0",
+    "eslint": "^5.8.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.14.0",
+    "mocha": "^5.2.0",
+    "sinon": "^7.1.0",
+    "typescript": "^3.1.4"
   }
 }
