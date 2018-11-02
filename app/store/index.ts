@@ -1,5 +1,5 @@
 import MemoryStore from './MemoryStore';
-import StoreOpts from './opts';
+import StoreOpts from './StoreOpts';
 
 export {
     StoreOpts,

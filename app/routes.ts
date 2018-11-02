@@ -23,9 +23,22 @@ router.get('/', (req: Request, res: Response) => {
 });
 
 router.post('/entries', (req: Request, res: Response) => {
-    return store.Set(req.body.key, req.body.value, DEFAULT_STORE_TTL).then(() => {
-        res.send('ok');
-    }).catch(genericErrorHandler.bind(null, res));
+    const { key, value } = req.body;
+
+    // TODO: Refactor into middleware.
+    if (!key) {
+        return res.status(400).send("Invalid request: Missing key");
+    }
+
+    if (!value) {
+        return res.status(400).send("Invalid request: Missing value");
+    }
+
+    return store
+        .Set(key, value, DEFAULT_STORE_TTL).then(() => {
+            res.send('ok');
+        })
+        .catch(genericErrorHandler.bind(null, res));
 });
 
 router.get('/entries/:key', (req: Request, res: Response) => {

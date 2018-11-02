@@ -2,14 +2,16 @@ const sizeof = require('object-sizeof');
 
 import {StoreInterface} from './StoreInterface';
 import Item from '../item';
-import StoreOpts from './opts';
+import StoreOpts from './StoreOpts';
+import StoreStats from './StoreStats';
 
 export default class MemoryStore implements StoreInterface {
-    opts: StoreOpts;
-    memorySizeBytes: number = 0;
+    private opts: StoreOpts;
+    private stats: StoreStats;
 
     constructor(opts: StoreOpts) {
         this.opts = opts;
+        this.stats = new StoreStats;
     }
 
     // Key/value pairs.
@@ -19,30 +21,31 @@ export default class MemoryStore implements StoreInterface {
         return this.__items;
     }
 
-    get stats() {
-        return null;
-    }
-
-    Set(key: string, value: any, ttl: number = 0) : Promise<Item> {
+    Set(key: string, value: any, ttl: number = 0) : Promise<any> {
         const item: Item = new Item(value, ttl);
+
+        // Obviously cannot insert if size of object exceeds set limit.
+        if (item.size > this.opts.maxSize) {
+            return Promise.reject(new Error("Failed to insert item, size exceeds limit."));
+        }
 
         if (this.__items.hasOwnProperty(key)) {
             let memorySizeBytesDelta = this.__items[key].size - item.size
 
-            if ((this.memorySizeBytes + memorySizeBytesDelta) > this.opts.maxSizeBytes) {
+            if ((this.stats.memorySizeBytes + memorySizeBytesDelta) > this.opts.maxSize) {
                 this.__evict();
             }
 
-            this.memorySizeBytes += memorySizeBytesDelta;
+            this.stats.memorySizeBytes += memorySizeBytesDelta;
 
         } else {
             const size = sizeof(key) + item.size;
 
-            if (this.memorySizeBytes + size > this.opts.maxSizeBytes) {
+            if (this.stats.memorySizeBytes + size > this.opts.maxSize) {
                 this.__evict();
             }
 
-            this.memorySizeBytes += size;
+            this.stats.memorySizeBytes += size;
         }
 
         this.__items[key] = item;
@@ -59,7 +62,7 @@ export default class MemoryStore implements StoreInterface {
 
         if (existed) {
             delete this.__items[key];
-            this.memorySizeBytes -= sizeof(key) + sizeof(this.__items[key]);
+            this.stats.memorySizeBytes -= sizeof(key) + sizeof(this.__items[key]);
         }
 
         return Promise.resolve(existed);

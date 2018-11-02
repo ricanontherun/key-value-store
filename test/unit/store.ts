@@ -14,7 +14,7 @@ describe("MemoryStore Tests", () => {
         });
 
         it ("Can get/set/delete key/value pairs", () => {
-            const options = (new StoreOpts).setMaxSizeBytes(1000);
+            const options = (new StoreOpts).setMaxSize(1000);
             const store = new MemoryStore(options);
 
             store.Set("name", "Christian").then((item : Item) => {
@@ -33,5 +33,5 @@ describe("MemoryStore Tests", () => {
 
     describe("Memory Management", () => {
 
-    })
+    });
 });

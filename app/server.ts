@@ -7,6 +7,7 @@ import router from './routes';
 const app: express.Application = express();
 
 app.use(bodyParser.json());
+
 app.use('/', router);
 
 const port: number = parseInt(process.env.PORT || '3000', 10);

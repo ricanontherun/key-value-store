@@ -12,16 +12,16 @@ enum MemoryLimitPolicy {
 
 export default class StoreOpts {
     __memoryLimitPolicy : MemoryLimitPolicy = MemoryLimitPolicy.MEMORY_LIMIT_POLICY_THROW;
-    __maxSizeBytes: number = 0;
+    size: number = 0;
 
-    setMaxSizeBytes(bytes : number) : StoreOpts {
-        this.__maxSizeBytes = bytes;
+    setMaxSize(bytes : number) : StoreOpts {
+        this.size = bytes;
 
         return this;
     }
 
-    get maxSizeBytes() : number {
-        return this.__maxSizeBytes;
+    get maxSize() : number {
+        return this.size;
     }
 
     setMemoryLimitPolicy(policy : MemoryLimitPolicy) : StoreOpts {
