@@ -2,30 +2,34 @@ import {default as express, Request, Response, Router} from 'express';
 
 import {
     StoreOpts,
-    MemoryStore
+    MemoryStore,
 } from './store';
+import {ErrorBadRequest} from './errors';
 import Item from './item'
 
 // TODO: Is there anyway to type hint an interface?
-const store = new MemoryStore(new StoreOpts);
+const storeOpts = new StoreOpts;
+storeOpts.setMaxSize(1);
+
+const store = new MemoryStore(storeOpts);
+
 const DEFAULT_STORE_TTL: number = 60; // seconds.
 
 const router = Router();
 
-const genericErrorHandler = (res: Response, err: Error) => {
-    console.error(err);
+const apiErrorResponseHandler = (res: Response, err: any) => {
+    console.log(err.name);
+    // We'll need to determine what kind of error happened.
+    if (err instanceof ErrorBadRequest) {
+        console.log('thing');
+    }
 
     return res.status(500).send('Something went wrong.')
 }
 
-router.get('/', (req: Request, res: Response) => {
-    return res.status(200).send('ok');
-});
-
-router.post('/entries', (req: Request, res: Response) => {
+const middlewarePostEntries = (req: Request, res: Response, next: Function) => {
     const { key, value } = req.body;
 
-    // TODO: Refactor into middleware.
     if (!key) {
         return res.status(400).send("Invalid request: Missing key");
     }
@@ -34,11 +38,24 @@ router.post('/entries', (req: Request, res: Response) => {
         return res.status(400).send("Invalid request: Missing value");
     }
 
+    // CHeck if ttl is provided, if not use default.
+    req.body.ttl = parseInt(req.body.ttl || DEFAULT_STORE_TTL, 10);
+
+    return next();
+}
+
+router.get('/', (req: Request, res: Response) => {
+    return res.status(200).send('ok');
+});
+
+router.post('/entries', [middlewarePostEntries],  (req: Request, res: Response) => {
     return store
-        .Set(key, value, DEFAULT_STORE_TTL).then(() => {
+        .Set(req.body.key, req.body.value, DEFAULT_STORE_TTL).then(() => {
             res.send('ok');
         })
-        .catch(genericErrorHandler.bind(null, res));
+        .catch((err) => {
+            apiErrorResponseHandler(res, err);
+        });
 });
 
 router.get('/entries/:key', (req: Request, res: Response) => {
@@ -51,17 +68,17 @@ router.get('/entries/:key', (req: Request, res: Response) => {
         if (item.expired) {
             store.Delete(req.params.key).then(() => {
                 res.status(404).send(null);
-            }).catch(genericErrorHandler.bind(null, res));
+            }).catch(apiErrorResponseHandler.bind(null, res));
         } else {
             res.send(item.value);
         }
-    }).catch(genericErrorHandler.bind(null, res));
+    }).catch(apiErrorResponseHandler.bind(null, res));
 });
 
 router.delete("/entries/:key", (req: Request, res: Response) => {
     return store.Delete(req.params.key).then(() => {
         return res.send('ok');
-    }).catch(genericErrorHandler.bind(null, res));
+    }).catch(apiErrorResponseHandler.bind(null, res));
 });
 
 export default router;

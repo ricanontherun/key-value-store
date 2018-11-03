@@ -4,6 +4,7 @@ import {StoreInterface} from './StoreInterface';
 import Item from '../item';
 import StoreOpts from './StoreOpts';
 import StoreStats from './StoreStats';
+import { ErrorBadRequest } from '../errors';
 
 export default class MemoryStore implements StoreInterface {
     private opts: StoreOpts;
@@ -26,7 +27,7 @@ export default class MemoryStore implements StoreInterface {
 
         // Obviously cannot insert if size of object exceeds set limit.
         if (item.size > this.opts.maxSize) {
-            return Promise.reject(new Error("Failed to insert item, size exceeds limit."));
+            return Promise.reject(new ErrorBadRequest("Failed to insert item, size exceeds limit."));
         }
 
         if (this.__items.hasOwnProperty(key)) {

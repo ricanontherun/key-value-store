@@ -1,3 +1,5 @@
+global.Promise = require('bluebird');
+
 import {default as express} from 'express';
 import bodyParser from 'body-parser';
 
