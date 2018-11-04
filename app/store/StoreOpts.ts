@@ -1,7 +1,7 @@
 
-enum MemoryLimitPolicy {
+export enum MemoryLimitPolicy {
     // Throw an exception.
-    MEMORY_LIMIT_POLICY_THROW = 0,
+    MEMORY_LIMIT_POLICY_ERROR = 0,
 
     // Evict using LRU algorithm
     MEMORY_LIMIT_POLICY_EVICT_LRU = 1,
@@ -11,17 +11,17 @@ enum MemoryLimitPolicy {
 }
 
 export default class StoreOpts {
-    __memoryLimitPolicy : MemoryLimitPolicy = MemoryLimitPolicy.MEMORY_LIMIT_POLICY_THROW;
-    size: number = 0;
+    private __memoryLimitPolicy : MemoryLimitPolicy = MemoryLimitPolicy.MEMORY_LIMIT_POLICY_ERROR;
+    private __maxMemorySize: number = 0;
 
     setMaxSize(bytes : number) : StoreOpts {
-        this.size = bytes;
+        this.__maxMemorySize = bytes;
 
         return this;
     }
 
     get maxSize() : number {
-        return this.size;
+        return this.__maxMemorySize;
     }
 
     setMemoryLimitPolicy(policy : MemoryLimitPolicy) : StoreOpts {

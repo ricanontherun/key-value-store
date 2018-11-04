@@ -2,8 +2,9 @@ const sizeof = require('object-sizeof');
 
 import {StoreInterface} from './StoreInterface';
 import Item from '../item';
-import StoreOpts from './StoreOpts';
+import {default as StoreOpts, MemoryLimitPolicy} from './StoreOpts';
 import StoreStats from './StoreStats';
+import {ErrorItemTooLarge, ErrorMemoryLimitReached} from '../errors';
 
 export default class MemoryStore implements StoreInterface {
     private opts: StoreOpts;
@@ -26,13 +27,17 @@ export default class MemoryStore implements StoreInterface {
 
         // Obviously cannot insert if size of object exceeds set limit.
         if (item.size > this.opts.maxSize) {
-            return Promise.reject(new Error("Failed to insert item, size exceeds limit."));
+            return Promise.reject(new ErrorItemTooLarge);
         }
 
         if (this.__items.hasOwnProperty(key)) {
             let memorySizeBytesDelta = this.__items[key].size - item.size
 
             if ((this.stats.memorySizeBytes + memorySizeBytesDelta) > this.opts.maxSize) {
+                if (this.opts.memoryLimitPolicy === MemoryLimitPolicy.MEMORY_LIMIT_POLICY_ERROR) {
+                    return Promise.reject(new ErrorMemoryLimitReached);
+                }
+
                 this.__evict();
             }
 
@@ -42,6 +47,10 @@ export default class MemoryStore implements StoreInterface {
             const size = sizeof(key) + item.size;
 
             if (this.stats.memorySizeBytes + size > this.opts.maxSize) {
+                if (this.opts.memoryLimitPolicy === MemoryLimitPolicy.MEMORY_LIMIT_POLICY_ERROR) {
+                    return Promise.reject(new ErrorMemoryLimitReached);
+                }
+
                 this.__evict();
             }
 
@@ -61,14 +70,18 @@ export default class MemoryStore implements StoreInterface {
         const existed = this.__items.hasOwnProperty(key);
 
         if (existed) {
+            const deleted = this.__items[key];
+
             delete this.__items[key];
-            this.stats.memorySizeBytes -= sizeof(key) + sizeof(this.__items[key]);
+
+            this.stats.memorySizeBytes -= sizeof(key) + deleted.size;
         }
 
         return Promise.resolve(existed);
     }
 
-    __evict() {
+    __evict() : boolean {
+        return false;
         // Execute an appropriate action depending on the
         //
         // Sort the object by least recently accessed.
