@@ -1,4 +1,4 @@
-import MemoryStore from './MemoryStore';
+import {default as MemoryStore} from './MemoryStore';
 import StoreOpts from './StoreOpts';
 
 export {

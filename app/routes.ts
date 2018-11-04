@@ -2,8 +2,9 @@ import {default as express, Request, Response, Router} from 'express';
 
 import {
     StoreOpts,
-    MemoryStore
+    MemoryStore,
 } from './store';
+import {ErrorBadRequest} from './errors';
 import Item from './item'
 
 const opts = (new StoreOpts).setMaxSize(1024);
@@ -48,7 +49,7 @@ router.post('/entries', [middlewarePostEntries], (req: Request, res: Response) =
     const { key, value } = req.body;
 
     return store
-        .Set(key, value, DEFAULT_STORE_TTL).then(() => {
+        .Set(req.body.key, req.body.value, DEFAULT_STORE_TTL).then(() => {
             res.send('ok');
         })
         .catch(requesetErrorHandler.bind(null, res));
