@@ -1,7 +1,8 @@
-import {default as MemoryStore} from './MemoryStore';
-import StoreOpts from './StoreOpts';
+import Store from './store';
+import {Opts, MemoryLimitPolicyEnum} from './opts';
 
 export {
-    StoreOpts,
-    MemoryStore
+    Opts,
+    Store,
+    MemoryLimitPolicyEnum,
 };

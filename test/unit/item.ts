@@ -3,7 +3,7 @@ import {expect} from 'chai';
 import moment from 'moment';
 const sizeof = require('object-sizeof');
 
-import Item from "../../app/item";
+import Item from "../../app/store/item";
 
 describe('Tests for Item class', () => {
     it("wont expire if it's not given a TTL", () => {

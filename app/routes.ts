@@ -1,14 +1,14 @@
 import {default as express, Request, Response, Router} from 'express';
 
 import {
-    StoreOpts,
-    MemoryStore,
+    Opts,
+    Store,
 } from './store';
-import {ErrorBadRequest} from './errors';
-import Item from './item'
 
-const opts = (new StoreOpts).setMaxSize(1024);
-const store = new MemoryStore(opts);
+import Item from './store/item'
+
+const opts = (new Opts).setMaxSize(1024);
+const store = new Store(opts);
 const DEFAULT_STORE_TTL: number = 60; // seconds.
 
 const router = Router();
@@ -45,8 +45,9 @@ router.get('/', (req: Request, res: Response) => {
     return res.status(200).send('ok');
 });
 
-router.post('/entries', [middlewarePostEntries], (req: Request, res: Response) => {
+router.post('/entries', [middlewarePostEntries], async (req: Request, res: Response) => {
     const { key, value } = req.body;
+
 
     return store
         .Set(req.body.key, req.body.value, DEFAULT_STORE_TTL).then(() => {
@@ -55,7 +56,12 @@ router.post('/entries', [middlewarePostEntries], (req: Request, res: Response) =
         .catch(requesetErrorHandler.bind(null, res));
 });
 
+router.put("/items/:key", () => {
+
+});
+
 router.get('/entries/:key', (req: Request, res: Response) => {
+    // store.Has()
     return store.Get(req.params.key).then((item: Item) => {
         if (!item) {
             return res.status(404).send(null);

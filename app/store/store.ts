@@ -1,18 +1,17 @@
 const sizeof = require('object-sizeof');
 
-import {StoreInterface} from './StoreInterface';
-import Item from '../item';
-import {default as StoreOpts, MemoryLimitPolicy} from './StoreOpts';
-import StoreStats from './StoreStats';
-import {ErrorItemTooLarge, ErrorMemoryLimitReached} from '../errors';
+import Item from './item';
+import {Opts, MemoryLimitPolicyEnum} from './opts';
+import Stats from './stats';
+import {ErrorItemTooLarge, ErrorMemoryLimitReached} from './errors';
 
-export default class MemoryStore implements StoreInterface {
-    private opts: StoreOpts;
-    private stats: StoreStats;
+export default class Store {
+    private opts: Opts;
+    private stats: Stats;
 
-    constructor(opts: StoreOpts) {
+    constructor(opts: Opts) {
         this.opts = opts;
-        this.stats = new StoreStats;
+        this.stats = new Stats;
     }
 
     // Key/value pairs.
@@ -27,14 +26,14 @@ export default class MemoryStore implements StoreInterface {
 
         // Obviously cannot insert if size of object exceeds set limit.
         if (item.size > this.opts.maxSize) {
-            return Promise.reject(new ErrorItemTooLarge);
+            return Promise.reject(new ErrorItemTooLarge("Item too large"));
         }
 
         if (this.__items.hasOwnProperty(key)) {
             let memorySizeBytesDelta = this.__items[key].size - item.size
 
             if ((this.stats.memorySizeBytes + memorySizeBytesDelta) > this.opts.maxSize) {
-                if (this.opts.memoryLimitPolicy === MemoryLimitPolicy.MEMORY_LIMIT_POLICY_ERROR) {
+                if (this.opts.memoryLimitPolicy === MemoryLimitPolicyEnum.MEMORY_LIMIT_POLICY_ERROR) {
                     return Promise.reject(new ErrorMemoryLimitReached);
                 }
 
@@ -47,7 +46,7 @@ export default class MemoryStore implements StoreInterface {
             const size = sizeof(key) + item.size;
 
             if (this.stats.memorySizeBytes + size > this.opts.maxSize) {
-                if (this.opts.memoryLimitPolicy === MemoryLimitPolicy.MEMORY_LIMIT_POLICY_ERROR) {
+                if (this.opts.memoryLimitPolicy === MemoryLimitPolicyEnum.MEMORY_LIMIT_POLICY_ERROR) {
                     return Promise.reject(new ErrorMemoryLimitReached);
                 }
 
@@ -64,6 +63,10 @@ export default class MemoryStore implements StoreInterface {
 
     Get(key: string) : Promise<Item> {
         return Promise.resolve(this.__items[key] || null);
+    }
+
+    Has(key : string) : boolean {
+        return this.__items.hasOwnProperty(key);
     }
 
     Delete(key: string) : Promise<boolean> {

@@ -1,5 +1,5 @@
 
-export enum MemoryLimitPolicy {
+export enum MemoryLimitPolicyEnum {
     // Throw an exception.
     MEMORY_LIMIT_POLICY_ERROR = 0,
 
@@ -10,11 +10,11 @@ export enum MemoryLimitPolicy {
     MEMORY_LIMIT_POLICY_EVICT_LFU = 2
 }
 
-export default class StoreOpts {
-    private __memoryLimitPolicy : MemoryLimitPolicy = MemoryLimitPolicy.MEMORY_LIMIT_POLICY_ERROR;
+export class Opts {
+    private __memoryLimitPolicy : MemoryLimitPolicyEnum = MemoryLimitPolicyEnum.MEMORY_LIMIT_POLICY_ERROR;
     private __maxMemorySize: number = 0;
 
-    setMaxSize(bytes : number) : StoreOpts {
+    setMaxSize(bytes : number) : Opts {
         this.__maxMemorySize = bytes;
 
         return this;
@@ -24,13 +24,13 @@ export default class StoreOpts {
         return this.__maxMemorySize;
     }
 
-    setMemoryLimitPolicy(policy : MemoryLimitPolicy) : StoreOpts {
+    setMemoryLimitPolicy(policy : MemoryLimitPolicyEnum) : Opts {
         this.__memoryLimitPolicy = policy;
 
         return this;
     }
 
-    get memoryLimitPolicy() : MemoryLimitPolicy {
+    get memoryLimitPolicy() : MemoryLimitPolicyEnum {
         return this.__memoryLimitPolicy;
     }
 };
