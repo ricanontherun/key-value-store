@@ -80,11 +80,15 @@ export default class Application {
     private dump(dbPath : string) {
         Logger.info('Dumping store contents to disk...');
 
-        const writer = createWriteStream(dbPath);
-        writer.write(JSON.stringify(this.store.items));
-        writer.on('finish', () => {
+        const writer = createWriteStream(dbPath)
+        .on('finish', () => {
             Logger.info('Finished writing store contents to disk.');
+        }).on('error', (err) => {
+            // TODO: Is this a fatal error?
+            Logger.error(`Failed to dump store contents to disk: ${err}`);
         });
+
+        writer.write(JSON.stringify(this.store.items));
         writer.end();
     }
 

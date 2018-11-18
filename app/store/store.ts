@@ -27,12 +27,14 @@ export default class Store {
      * @param json
      */
     SetFromJSON(key : string, json : any) {
-        this.__items[key] = Object.setPrototypeOf(json, Item.prototype);
+        this._Set(key, Object.setPrototypeOf(json, Item.prototype));
     }
 
     Set(key: string, value: any, ttl: number = 0) : Promise<any> {
-        const item: Item = new Item(value, ttl);
+        return this._Set(key, new Item(value, ttl));
+    }
 
+    private _Set(key : string, item : Item) {
         // Obviously cannot insert if size of object exceeds set limit.
         if (item.size > this.opts.maxSize) {
             return Promise.reject(new ErrorItemTooLarge("Item too large"));

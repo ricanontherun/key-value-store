@@ -34,6 +34,16 @@ export default (store : Store) => {
             return res.status(400).send("Invalid request: Missing value");
         }
 
+        if (req.body.ttl) {
+            const ttl = parseInt(req.body.ttl || DEFAULT_STORE_TTL);
+
+            if (isNaN(ttl)) {
+                return res.status(400).send('Invalid ttl');
+            }
+
+            req.body.ttl = ttl;
+        }
+
         next();
     }
 
@@ -42,39 +52,54 @@ export default (store : Store) => {
     });
 
     router.post('/entries', [middlewarePostEntries], async (req: Request, res: Response) => {
-        return store
-            .Set(req.body.key, req.body.value, DEFAULT_STORE_TTL).then(() => {
-                res.send('ok');
-            })
-            .catch(requesetErrorHandler.bind(null, res));
+        const {key, value, ttl} = req.body;
+
+        try {
+            await store.Set(key, value, ttl);
+        } catch (err) {
+            return requesetErrorHandler(res, err);
+        }
+
+        return res.send('ok');
     });
 
-    router.put("/items/:key", () => {
+    router.get('/entries/:key', async (req: Request, res: Response) => {
+        const {key} = req.params;
 
+        if (!store.Has(key)) {
+            return res.status(404).end();
+        }
+
+        let item;
+
+        try {
+            item = await store.Get(key);
+        } catch (err) {
+            return requesetErrorHandler(res, err);
+        }
+
+        // Lazy expiration check.
+        if (!item.expired) {
+            return res.send(item.value);
+        }
+
+        try {
+            await store.Delete(key);
+        } catch (err) {
+            return requesetErrorHandler(res, err);
+        }
+
+        return res.status(404).end();
     });
 
-    router.get('/entries/:key', (req: Request, res: Response) => {
-        // store.Has()
-        return store.Get(req.params.key).then((item: Item) => {
-            if (!item) {
-                return res.status(404).send(null);
-            }
+    router.delete("/entries/:key", async (req: Request, res: Response) => {
+        try {
+            await store.Delete(req.params.key);
+        } catch (err) {
+            return requesetErrorHandler(res, err);
+        }
 
-            // Lazy check for expiration. Delete the item if it has expired.
-            if (item.expired) {
-                store.Delete(req.params.key).then(() => {
-                    res.status(404).send(null);
-                }).catch(requesetErrorHandler.bind(null, res));
-            } else {
-                res.send(item.value);
-            }
-        }).catch(requesetErrorHandler.bind(null, res));
-    });
-
-    router.delete("/entries/:key", (req: Request, res: Response) => {
-        return store.Delete(req.params.key).then(() => {
-            return res.send('ok');
-        }).catch(requesetErrorHandler.bind(null, res));
+        return res.send('ok');
     });
 
     return router;
