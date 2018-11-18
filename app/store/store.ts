@@ -8,17 +8,26 @@ import {ErrorItemTooLarge, ErrorMemoryLimitReached} from './errors';
 export default class Store {
     private opts: Opts;
     private stats: Stats;
+    private __items: { [s:string] : Item; } = {};
 
     constructor(opts: Opts) {
         this.opts = opts;
         this.stats = new Stats;
     }
 
-    // Key/value pairs.
-    private __items: { [s:string] : Item; } = {};
-
     get items() : { [s:string] : Item; } {
         return this.__items;
+    }
+
+    /**
+     * Insert a key/value pair, where the value is a plain old JSON object.
+     * This function is generally only used when hydrating the store from disk.
+     *
+     * @param key
+     * @param json
+     */
+    SetFromJSON(key : string, json : any) {
+        this.__items[key] = Object.setPrototypeOf(json, Item.prototype);
     }
 
     Set(key: string, value: any, ttl: number = 0) : Promise<any> {

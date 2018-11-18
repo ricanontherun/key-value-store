@@ -33,7 +33,7 @@ describe("Store Tests", () => {
     });
 
     describe("Memory Management", () => {
-        it .only("will return an error when the insertion item is larger than the configured memory", (done) => {
+        it ("will return an error when the insertion item is larger than the configured memory", (done) => {
             const opts = new Opts();
             opts.setMaxSize(100);
 
