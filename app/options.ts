@@ -1,29 +1,39 @@
 const commander = require('commander');
 
-commander.option('--config <config>', 'Path to config file').parse(process.argv);
+import Logger from './log';
 
-// Base options blueprint.
-const opts = {
+commander
+    .option('--config <config>', 'Path to config file')
+    .parse(process.argv);
+
+if (!commander.config) {
+    commander.help();
+}
+
+let config;
+try {
+    config = JSON.parse(require('fs').readFileSync(commander.config));
+} catch (readErr) {
+    Logger.fatal(`Failed to read config: ${readErr}`);
+}
+
+// Base options.
+const optionsBase = {
     http: {
-        port: 3000
+        port: 6380
     },
 
     persistence: {
-        enabled: true,
-        dbPath: './test.json',
-        writeInterval: 5 // seconds
+        enabled: false,
+        dbPath: '',
+        writeInterval: 0// seconds
     },
 
     store: {
-
-    },
-
-    verbose: true
+        maxSize: 0, // bytes
+    }
 };
 
-if (opts.verbose) {
-    // Set a convenience env var.
-    process.env.OPTS_VERBOSE = 'true';
-}
+const opts = Object.assign(optionsBase, config);
 
 export default opts;

@@ -10,7 +10,7 @@
     "test": "./node_modules/mocha/bin/mocha -r ts-node/register test/**/*.ts",
     "tsc": "tsc",
     "start": "node ./build/app",
-    "start-dev": "npm run tsc && npm run start",
+    "start-dev": "npm run tsc && node ./build/app",
     "start-debug": "npm run tsc && node -r ts-node/register --inspect-brk=9229 build/server.js"
   },
   "keywords": [],

@@ -28,11 +28,16 @@ const error = winston.createLogger({
 });
 
 export default class Logger {
-    static info(message: string) {
+    static info(message : string) {
         info.info(message);
     }
 
-    static error(message: string) {
+    static error(message : string) {
         error.error(message);
+    }
+
+    static fatal(message : string) {
+        Logger.error(message);
+        process.exit(1);
     }
 }

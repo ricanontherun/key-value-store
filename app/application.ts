@@ -33,7 +33,7 @@ export default class Application {
         this.options = options;
 
         // TOOD: Create opts from incoming options argument.
-        const opts = (new Opts).setMaxSize(1024);
+        const opts = (new Opts).setMaxSize(this.options.store.maxSize);
         this.store = new Store(opts);
 
         this.setupServer();
@@ -81,10 +81,8 @@ export default class Application {
         Logger.info('Dumping store contents to disk...');
 
         const writer = createWriteStream(dbPath);
-
         writer.write(JSON.stringify(this.store.items));
         writer.on('finish', () => {
-            // Maybe some statistics here? Bytes written, elapsed time?
             Logger.info('Finished writing store contents to disk.');
         });
         writer.end();
