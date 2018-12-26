@@ -1,8 +1,7 @@
 import Store from './store';
-import {Opts, MemoryLimitPolicyEnum} from './opts';
+import StoreInterface from './interface';
 
 export {
-    Opts,
-    Store,
-    MemoryLimitPolicyEnum,
+  Store,
+  StoreInterface,
 };
